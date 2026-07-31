@@ -557,11 +557,11 @@ function SubcatRow({ subId, leaf, count, owners, topCats, onToggleOwner, onNavig
         onDragOver={(e) => { if (canAcceptItems && dragActive) { e.preventDefault(); setOverDrop(true); } }}
         onDragLeave={() => setOverDrop(false)}
         onDrop={(e) => { if (canAcceptItems && dragActive) { e.preventDefault(); setOverDrop(false); onDropItems(); } }}
-        style={{ display: "flex", alignItems: "center", gap: 6, padding: "5px 8px", borderRadius: 6, cursor: editing ? "default" : "pointer", fontSize: 13, userSelect: "none",
-          background: overDrop && dragActive ? "#2563eb" : isSelected ? "#1e293b" : "transparent",
-          color: overDrop && dragActive ? "#fff" : orphan ? "#94a3b8" : "#cbd5e1",
-          outline: overDrop && dragActive ? "2px solid #60a5fa" : "none" }}>
-        <Folder size={14} />
+        style={{ display: "flex", alignItems: "center", gap: 6, padding: "5px 8px", borderRadius: 6, cursor: editing ? "default" : "pointer", fontSize: 12.5, userSelect: "none",
+          // same three states as the tree: soft blue drop target, soft green selection
+          background: overDrop && dragActive ? "#1e3350" : isSelected ? "#1a2f28" : "transparent",
+          color: overDrop && dragActive ? "#c4d6ea" : isSelected ? "#bcd6c8" : orphan ? "#94a3b8" : "#cbd5e1" }}>
+        <Folder size={13} color={overDrop && dragActive ? "#6d94ba" : isSelected ? "#5d9179" : "#64748b"} />
         {editing ? (
           <input autoFocus value={draft}
             onChange={(e) => setDraft(stripCyrillic(e.target.value))}
@@ -571,7 +571,7 @@ function SubcatRow({ subId, leaf, count, owners, topCats, onToggleOwner, onNavig
         ) : (
           <span style={{ flex: 1, whiteSpace: "nowrap" }}>{leaf}</span>
         )}
-        {!editing && <span style={{ fontSize: 11, color: "#64748b" }}>{count}</span>}
+        {!editing && <span style={{ fontSize: 11, color: overDrop && dragActive ? "#95b4d2" : isSelected ? "#7ea38e" : "#64748b" }}>{count}</span>}
         {!editing && (
           <span className="rowbtns" style={{ display: "flex", gap: 2 }}>
             <button ref={btnRef} data-checklist-ui onClick={(e) => { e.stopPropagation(); openChecklist(); }} title="Show in categories" style={iconBtn}><ListChecks size={12} /></button>
