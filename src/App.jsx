@@ -212,7 +212,7 @@ function countWrappedLines(ctx, text, maxW) {
 
 // ---------- Virtualised card grid ----------
 // Renders only rows visible in the scroll viewport. Handles 70k items smoothly.
-function CardGrid({ items, selectedIds, onCardClick, onDragStart, onDragEnd, onMarqueeSelect }) {
+function CardGrid({ items, selectedIds, onCardClick, onDragStart, onDragEnd, onMarqueeSelect, resetKey }) {
   const scrollRef = useRef(null);
   const measureCanvas = useRef(null);
   const [scrollTop, setScrollTop] = useState(0);
@@ -281,6 +281,14 @@ function CardGrid({ items, selectedIds, onCardClick, onDragStart, onDragEnd, onM
 
   const rowCount = Math.ceil(items.length / cols);
   const totalH = rowCount * ROW_H;
+  // Jump back to the top when the view changes — otherwise the virtualized list
+  // keeps the previous scroll offset and a new subcategory opens mid-list.
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (el) el.scrollTop = 0;
+    setScrollTop(0);
+  }, [resetKey]);
+
   const firstRow = Math.max(0, Math.floor(scrollTop / ROW_H) - 2);
   const lastRow = Math.min(rowCount, Math.ceil((scrollTop + viewH) / ROW_H) + 2);
 
@@ -1706,6 +1714,7 @@ export default function App() {
           </div>
         ) : (
           <CardGrid items={filteredWithPaths} selectedIds={selectedIds}
+            resetKey={`${selectedCat || ""}|${multiFilter.join(",")}|${onlyUnsorted}|${debounced}`}
             onCardClick={onCardClick} onDragStart={handleDragStart} onDragEnd={() => setDragActive(false)}
             onMarqueeSelect={onMarqueeSelect} />
         )}
