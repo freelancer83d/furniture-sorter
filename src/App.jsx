@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useRef, useCallback, useEffect } from "react";
 import {
   Search, FolderPlus, Trash2, Pencil, Check, X, ChevronRight, ChevronDown,
-  Move, Download, Upload, Filter, Package, FolderOpen, Folder, Loader2, AlertTriangle, ExternalLink, ListChecks, PanelLeftClose, PanelLeftOpen, Undo2, FlipHorizontal, History
+  Move, Download, Upload, Filter, Package, FolderOpen, Folder, Loader2, AlertTriangle, ExternalLink, ListChecks, PanelLeftClose, PanelLeftOpen, Undo2, FlipHorizontal, History, Box
 } from "lucide-react";
 import { parseCsv, buildCsv } from "./csv.js";
 import { saveAllItems, loadAllItems, updateCategories, saveMeta, loadMeta, clearAll } from "./db.js";
@@ -106,12 +106,17 @@ function TreeNode({ name, path, node, depth, selectedCat, onSelect, onDrop, onRe
           }
         }}
         style={{
-          display: "flex", alignItems: "center", gap: 4, padding: "5px 6px",
-          paddingLeft: 6 + depth * 14, cursor: isSubcat ? "grab" : "pointer", borderRadius: 6,
-          fontSize: 13, userSelect: "none",
-          background: over && dragActive ? "#2563eb" : isSel ? "#1e293b" : "transparent",
-          color: over && dragActive ? "#fff" : isSel ? "#fff" : "#cbd5e1",
-          outline: over && dragActive ? "2px solid #60a5fa" : "none",
+          display: "flex", alignItems: "center", gap: 5,
+          padding: isSubcat ? "4px 6px" : "6px",
+          marginTop: isSubcat ? 0 : 6,
+          cursor: isSubcat ? "grab" : "pointer", borderRadius: 6,
+          fontSize: isSubcat ? 12.5 : 13,
+          fontWeight: isSubcat ? 400 : 500,
+          userSelect: "none",
+          // three distinct states: drop target (soft blue), selected (soft green),
+          // and — for top-level categories — a slate band that reads as a header
+          background: over && dragActive ? "#1e3350" : isSel ? "#1a2f28" : isSubcat ? "transparent" : "#1e293b",
+          color: over && dragActive ? "#c4d6ea" : isSel ? "#bcd6c8" : isSubcat ? "#cbd5e1" : "#f8fafc",
           boxShadow: dropEdge === "top" ? "inset 0 2px 0 #60a5fa" : dropEdge === "bottom" ? "inset 0 -2px 0 #60a5fa" : "none",
         }}
       >
@@ -119,8 +124,10 @@ function TreeNode({ name, path, node, depth, selectedCat, onSelect, onDrop, onRe
           <span onClick={(e) => { e.stopPropagation(); setOpen(!open); }} style={{ display: "flex" }}>
             {open ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
           </span>
-        ) : <span style={{ width: 14 }} />}
-        {isSel ? <FolderOpen size={14} /> : <Folder size={14} />}
+        ) : (isSubcat ? null : <span style={{ width: 14 }} />)}
+        {isSubcat
+          ? <Folder size={13} color={over && dragActive ? "#6d94ba" : isSel ? "#5d9179" : "#64748b"} />
+          : <Box size={15} color={isSel ? "#5d9179" : "#93c5fd"} />}
         {editing ? (
           <input
             autoFocus value={draft}
@@ -135,7 +142,9 @@ function TreeNode({ name, path, node, depth, selectedCat, onSelect, onDrop, onRe
           <span style={{ flex: 1, whiteSpace: "nowrap" }}>{name}</span>
         )}
         {!editing && count > 0 && (
-          <span style={{ fontSize: 11, color: over && dragActive ? "#dbeafe" : "#64748b", background: over && dragActive ? "rgba(255,255,255,.15)" : "#1e293b", borderRadius: 10, padding: "0 6px", minWidth: 18, textAlign: "center" }}>{count}</span>
+          <span style={{ fontSize: 11,
+            color: over && dragActive ? "#95b4d2" : isSel ? "#7ea38e" : isSubcat ? "#64748b" : "#cbd5e1",
+            background: "transparent", borderRadius: 10, padding: "0 4px", minWidth: 18, textAlign: "right" }}>{count}</span>
         )}
         {!editing && (
           <span className="rowbtns" style={{ display: "flex", gap: 2, alignItems: "center" }}>
@@ -171,13 +180,17 @@ function TreeNode({ name, path, node, depth, selectedCat, onSelect, onDrop, onRe
           </div>
         );
       })()}
-      {open && hasChildren && children.map((c) => (
+      {open && hasChildren && (
+      <div style={depth === 0 ? { borderLeft: "1px solid #334155", marginLeft: 14, paddingLeft: 6, marginTop: 2 } : undefined}>
+      {children.map((c) => (
         <TreeNode key={c} name={c} path={path ? `${path}.${c}` : c} node={node.__children[c]}
           depth={depth + 1} selectedCat={selectedCat} onSelect={onSelect} onDrop={onDrop}
           onRenameSub={onRenameSub} onRenameCat={onRenameCat} onDelete={onDelete} dragActive={dragActive} counts={counts}
           topCats={topCats} ownersOf={ownersOf} onToggleOwner={onToggleOwner} subIdByPath={subIdByPath}
           orderChildren={orderChildren} onReorderStart={onReorderStart} onReorderEnd={onReorderEnd} onReorderDrop={onReorderDrop} reorderInfo={reorderInfo} />
       ))}
+      </div>
+      )}
     </div>
   );
 }
