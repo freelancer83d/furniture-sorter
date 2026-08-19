@@ -842,7 +842,11 @@ export default function App() {
       if (ids.length) order[cat] = ids;
     }
     const cats = Array.isArray(data.categories) ? [...new Set(data.categories)] : [];
-    const top = Array.isArray(data.topOrder) ? data.topOrder.slice() : [];
+    // Category order: explicit topOrder wins; otherwise fall back to the order
+    // the categories are listed in, so the file can be hand-edited.
+    const top = Array.isArray(data.topOrder) && data.topOrder.length
+      ? data.topOrder.slice()
+      : cats.slice();
     return { registry, byName, order, cats, top, seq };
   }, []);
 
@@ -1128,10 +1132,13 @@ export default function App() {
   // Order subcategory children of a top-level category by the manual list,
   // falling back to alphabetical for any not in the list. childNames are leaf
   // names; we map them to subIds via the display path.
+  // NOTE: read subIdByPath directly (not through a ref). A ref is only updated
+  // after render, so on the very first paint it was still empty and every rank
+  // fell back to Infinity — which is why a loaded catalogue came out alphabetical.
   const orderChildren = useCallback((parentCat, childNames) => {
     const order = catOrder[parentCat] || [];
     const rank = (leaf) => {
-      const sid = subIdByPathRef.current[`${parentCat}.${leaf}`];
+      const sid = subIdByPath[`${parentCat}.${leaf}`];
       const i = sid ? order.indexOf(sid) : -1;
       return i === -1 ? Infinity : i;
     };
@@ -1140,7 +1147,7 @@ export default function App() {
       if (ra !== rb) return ra - rb;
       return a.localeCompare(b); // stable alphabetical fallback
     });
-  }, [catOrder]);
+  }, [catOrder, subIdByPath]);
 
   // Reorder subcategories within a category via drag & drop (main panel).
   const [reorderInfo, setReorderInfo] = useState(null); // {kind:'sub'|'cat', ...}
