@@ -1046,5 +1046,21 @@
       "stairs",
       "washers"
     ]
-  }
+  },
+  "topOrder": [
+    "living",
+    "bedroom",
+    "dining",
+    "kitchen",
+    "bathroom",
+    "kids",
+    "office",
+    "hallway",
+    "outdoor",
+    "lighting",
+    "decor",
+    "tableware",
+    "rugs",
+    "other"
+  ]
 }
