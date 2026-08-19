@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "categories": ["bedroom", "dining", "living"],
+  "subcategories": [
+    { "name": "armchairs", "owners": ["living", "bedroom"] },
+    { "name": "sofas", "owners": ["living"] },
+    { "name": "dining-tables", "owners": ["dining"] }
+  ],
+  "order": { "living": ["sofas", "armchairs"] },
+  "topOrder": ["living", "bedroom", "dining"]
+}

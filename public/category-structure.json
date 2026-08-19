@@ -1,0 +1,1050 @@
+{
+  "version": 1,
+  "categories": [
+    "bathroom",
+    "bedroom",
+    "decor",
+    "dining",
+    "hallway",
+    "kids",
+    "kitchen",
+    "lighting",
+    "living",
+    "office",
+    "other",
+    "outdoor",
+    "rugs",
+    "tableware"
+  ],
+  "subcategories": [
+    {
+      "name": "armchairs",
+      "owners": [
+        "living"
+      ]
+    },
+    {
+      "name": "pillows-cushions",
+      "owners": [
+        "decor"
+      ]
+    },
+    {
+      "name": "curtains-blinds",
+      "owners": [
+        "decor"
+      ]
+    },
+    {
+      "name": "beds",
+      "owners": [
+        "bedroom"
+      ]
+    },
+    {
+      "name": "sectional-sofas",
+      "owners": [
+        "living"
+      ]
+    },
+    {
+      "name": "chairs",
+      "owners": [
+        "living"
+      ]
+    },
+    {
+      "name": "decor-for-kitchen",
+      "owners": [
+        "kitchen"
+      ]
+    },
+    {
+      "name": "miscellaneous",
+      "owners": [
+        "other"
+      ]
+    },
+    {
+      "name": "vanities-sinks",
+      "owners": [
+        "bathroom"
+      ]
+    },
+    {
+      "name": "wall-art",
+      "owners": [
+        "decor"
+      ]
+    },
+    {
+      "name": "sideboards-storage",
+      "owners": [
+        "dining",
+        "living",
+        "office"
+      ]
+    },
+    {
+      "name": "daybeds",
+      "owners": [
+        "bedroom"
+      ]
+    },
+    {
+      "name": "bed-frames",
+      "owners": [
+        "bedroom"
+      ]
+    },
+    {
+      "name": "kid-beds",
+      "owners": [
+        "kids"
+      ]
+    },
+    {
+      "name": "sofas",
+      "owners": [
+        "living"
+      ]
+    },
+    {
+      "name": "bunk-beds",
+      "owners": [
+        "kids"
+      ]
+    },
+    {
+      "name": "outdoor-storage",
+      "owners": [
+        "outdoor"
+      ]
+    },
+    {
+      "name": "planter-boxes",
+      "owners": [
+        "decor"
+      ]
+    },
+    {
+      "name": "nightstands",
+      "owners": [
+        "bedroom"
+      ]
+    },
+    {
+      "name": "storage-boxes-organization-bins",
+      "owners": [
+        "decor"
+      ]
+    },
+    {
+      "name": "books",
+      "owners": [
+        "decor"
+      ]
+    },
+    {
+      "name": "area-rugs",
+      "owners": [
+        "rugs"
+      ]
+    },
+    {
+      "name": "side-end-tables",
+      "owners": [
+        "living"
+      ]
+    },
+    {
+      "name": "lounge-chairs",
+      "owners": [
+        "living"
+      ]
+    },
+    {
+      "name": "office-chairs",
+      "owners": [
+        "office"
+      ]
+    },
+    {
+      "name": "runner-rugs",
+      "owners": [
+        "rugs"
+      ]
+    },
+    {
+      "name": "coffee-tables",
+      "owners": [
+        "living"
+      ]
+    },
+    {
+      "name": "bookcase-shelves",
+      "owners": [
+        "living",
+        "office"
+      ]
+    },
+    {
+      "name": "tv-stands-media-consoles",
+      "owners": [
+        "living"
+      ]
+    },
+    {
+      "name": "sculptures-figurines",
+      "owners": [
+        "decor"
+      ]
+    },
+    {
+      "name": "3d-text",
+      "owners": [
+        "decor"
+      ]
+    },
+    {
+      "name": "china-cabinets",
+      "owners": [
+        "dining"
+      ]
+    },
+    {
+      "name": "dressers",
+      "owners": [
+        "bedroom"
+      ]
+    },
+    {
+      "name": "outdoor-decor",
+      "owners": [
+        "outdoor"
+      ]
+    },
+    {
+      "name": "outdoor-dining-tables-sets",
+      "owners": [
+        "outdoor"
+      ]
+    },
+    {
+      "name": "dining-tables",
+      "owners": [
+        "dining"
+      ]
+    },
+    {
+      "name": "clocks",
+      "owners": [
+        "decor"
+      ]
+    },
+    {
+      "name": "toys",
+      "owners": [
+        "kids"
+      ]
+    },
+    {
+      "name": "bar-counter-stools",
+      "owners": [
+        "kitchen"
+      ]
+    },
+    {
+      "name": "desks",
+      "owners": [
+        "office"
+      ]
+    },
+    {
+      "name": "ottomans-poufs",
+      "owners": [
+        "living"
+      ]
+    },
+    {
+      "name": "storage",
+      "owners": [
+        "office"
+      ]
+    },
+    {
+      "name": "kitchen-islands",
+      "owners": [
+        "kitchen"
+      ]
+    },
+    {
+      "name": "bowls",
+      "owners": [
+        "tableware"
+      ]
+    },
+    {
+      "name": "office-supplies",
+      "owners": [
+        "office"
+      ]
+    },
+    {
+      "name": "storage-organization",
+      "owners": [
+        "bathroom"
+      ]
+    },
+    {
+      "name": "plants-flowers",
+      "owners": [
+        "decor"
+      ]
+    },
+    {
+      "name": "vases",
+      "owners": [
+        "decor"
+      ]
+    },
+    {
+      "name": "benches",
+      "owners": [
+        "bedroom",
+        "hallway"
+      ]
+    },
+    {
+      "name": "console-tables",
+      "owners": [
+        "living"
+      ]
+    },
+    {
+      "name": "fridge-cabinets",
+      "owners": [
+        "kitchen",
+        "dining"
+      ]
+    },
+    {
+      "name": "games",
+      "owners": [
+        "other"
+      ]
+    },
+    {
+      "name": "table-lamps",
+      "owners": [
+        "lighting"
+      ]
+    },
+    {
+      "name": "pet-supplies",
+      "owners": [
+        "outdoor"
+      ]
+    },
+    {
+      "name": "holiday-decor",
+      "owners": [
+        "decor"
+      ]
+    },
+    {
+      "name": "mirrors",
+      "owners": [
+        "decor",
+        "bathroom"
+      ]
+    },
+    {
+      "name": "plates-platters",
+      "owners": [
+        "tableware"
+      ]
+    },
+    {
+      "name": "loveseats",
+      "owners": [
+        "living"
+      ]
+    },
+    {
+      "name": "electronics",
+      "owners": [
+        "other"
+      ]
+    },
+    {
+      "name": "floor-lamps",
+      "owners": [
+        "lighting"
+      ]
+    },
+    {
+      "name": "candelsticks",
+      "owners": [
+        "decor"
+      ]
+    },
+    {
+      "name": "trays",
+      "owners": [
+        "tableware"
+      ]
+    },
+    {
+      "name": "outdoor-cushions",
+      "owners": [
+        "outdoor"
+      ]
+    },
+    {
+      "name": "dining-sets",
+      "owners": [
+        "dining"
+      ]
+    },
+    {
+      "name": "dressing-tables-stools",
+      "owners": [
+        "bedroom"
+      ]
+    },
+    {
+      "name": "outdoor-lounge-chairs",
+      "owners": [
+        "outdoor"
+      ]
+    },
+    {
+      "name": "highboards-wall-cabinets",
+      "owners": [
+        "living"
+      ]
+    },
+    {
+      "name": "bar-counters",
+      "owners": [
+        "kitchen"
+      ]
+    },
+    {
+      "name": "outdoor-umbrellas",
+      "owners": [
+        "outdoor"
+      ]
+    },
+    {
+      "name": "bathtubs",
+      "owners": [
+        "bathroom"
+      ]
+    },
+    {
+      "name": "dining-chairs",
+      "owners": [
+        "dining"
+      ]
+    },
+    {
+      "name": "outdoor-dining-chairs",
+      "owners": [
+        "outdoor"
+      ]
+    },
+    {
+      "name": "headboards",
+      "owners": [
+        "bedroom"
+      ]
+    },
+    {
+      "name": "fire-pit-bbq",
+      "owners": [
+        "outdoor"
+      ]
+    },
+    {
+      "name": "tablecloth",
+      "owners": [
+        "tableware"
+      ]
+    },
+    {
+      "name": "napkins-placemats",
+      "owners": [
+        "tableware"
+      ]
+    },
+    {
+      "name": "sun-loungers",
+      "owners": [
+        "outdoor"
+      ]
+    },
+    {
+      "name": "outdoor-sofas-seating-sets",
+      "owners": [
+        "outdoor"
+      ]
+    },
+    {
+      "name": "cribs",
+      "owners": [
+        "kids"
+      ]
+    },
+    {
+      "name": "stools",
+      "owners": [
+        "hallway",
+        "living"
+      ]
+    },
+    {
+      "name": "glasses-cups-mugs",
+      "owners": [
+        "tableware"
+      ]
+    },
+    {
+      "name": "outdoor-kitchen-cabinets",
+      "owners": [
+        "outdoor"
+      ]
+    },
+    {
+      "name": "mattresses",
+      "owners": [
+        "bedroom",
+        "kids"
+      ]
+    },
+    {
+      "name": "outbuildings",
+      "owners": [
+        "outdoor"
+      ]
+    },
+    {
+      "name": "large-appliances",
+      "owners": [
+        "kitchen"
+      ]
+    },
+    {
+      "name": "switches-outlets",
+      "owners": [
+        "other"
+      ]
+    },
+    {
+      "name": "door-mats",
+      "owners": [
+        "rugs"
+      ]
+    },
+    {
+      "name": "outdoor-benches",
+      "owners": [
+        "outdoor"
+      ]
+    },
+    {
+      "name": "bathroom-fixtures",
+      "owners": [
+        "bathroom"
+      ]
+    },
+    {
+      "name": "bins-holders-dryers",
+      "owners": [
+        "bathroom"
+      ]
+    },
+    {
+      "name": "hooks-hangers",
+      "owners": [
+        "hallway"
+      ]
+    },
+    {
+      "name": "fireplaces",
+      "owners": [
+        "living"
+      ]
+    },
+    {
+      "name": "outdoor-end-tables",
+      "owners": [
+        "outdoor"
+      ]
+    },
+    {
+      "name": "bar-carts",
+      "owners": [
+        "dining"
+      ]
+    },
+    {
+      "name": "cutlery",
+      "owners": [
+        "tableware"
+      ]
+    },
+    {
+      "name": "stands-organizers",
+      "owners": [
+        "kitchen"
+      ]
+    },
+    {
+      "name": "outdoor-coffee-tables",
+      "owners": [
+        "outdoor"
+      ]
+    },
+    {
+      "name": "flush-mounts",
+      "owners": [
+        "lighting"
+      ]
+    },
+    {
+      "name": "spotlights",
+      "owners": [
+        "lighting"
+      ]
+    },
+    {
+      "name": "sconces",
+      "owners": [
+        "lighting"
+      ]
+    },
+    {
+      "name": "living-room-sets",
+      "owners": [
+        "living"
+      ]
+    },
+    {
+      "name": "kid-chairs-seating",
+      "owners": [
+        "kids"
+      ]
+    },
+    {
+      "name": "rocking-chairs",
+      "owners": [
+        "living"
+      ]
+    },
+    {
+      "name": "outdoor-ottoman's-stools",
+      "owners": [
+        "outdoor"
+      ]
+    },
+    {
+      "name": "entry-cabinets",
+      "owners": [
+        "hallway"
+      ]
+    },
+    {
+      "name": "barn-doors",
+      "owners": [
+        "other"
+      ]
+    },
+    {
+      "name": "wardrobes",
+      "owners": [
+        "bedroom"
+      ]
+    },
+    {
+      "name": "accessories",
+      "owners": [
+        "bathroom"
+      ]
+    },
+    {
+      "name": "changing-tables-storage",
+      "owners": [
+        "kids"
+      ]
+    },
+    {
+      "name": "kid-tables",
+      "owners": [
+        "kids"
+      ]
+    },
+    {
+      "name": "gym-equipment",
+      "owners": [
+        "other"
+      ]
+    },
+    {
+      "name": "kitchen-carts",
+      "owners": [
+        "kitchen"
+      ]
+    },
+    {
+      "name": "mats-coasters",
+      "owners": [
+        "tableware"
+      ]
+    },
+    {
+      "name": "small-appliances",
+      "owners": [
+        "kitchen"
+      ]
+    },
+    {
+      "name": "towels",
+      "owners": [
+        "bathroom"
+      ]
+    },
+    {
+      "name": "stairs",
+      "owners": [
+        "other"
+      ]
+    },
+    {
+      "name": "pergolas-gazebos",
+      "owners": [
+        "outdoor"
+      ]
+    },
+    {
+      "name": "lamp-shades",
+      "owners": [
+        "lighting"
+      ]
+    },
+    {
+      "name": "pendants",
+      "owners": [
+        "lighting"
+      ]
+    },
+    {
+      "name": "outdoor-rugs",
+      "owners": [
+        "rugs"
+      ]
+    },
+    {
+      "name": "room-dividers",
+      "owners": [
+        "decor"
+      ]
+    },
+    {
+      "name": "outdoor-ceiling-lights",
+      "owners": [
+        "lighting",
+        "outdoor"
+      ]
+    },
+    {
+      "name": "outdoor-wall-lights",
+      "owners": [
+        "lighting",
+        "outdoor"
+      ]
+    },
+    {
+      "name": "outdoor-lamp-posts",
+      "owners": [
+        "lighting",
+        "outdoor"
+      ]
+    },
+    {
+      "name": "chandeliers",
+      "owners": [
+        "lighting"
+      ]
+    },
+    {
+      "name": "picture-lights",
+      "owners": [
+        "lighting"
+      ]
+    },
+    {
+      "name": "wine-racks",
+      "owners": [
+        "dining"
+      ]
+    },
+    {
+      "name": "radiators",
+      "owners": [
+        "decor"
+      ]
+    },
+    {
+      "name": "shoe-storage",
+      "owners": [
+        "hallway"
+      ]
+    },
+    {
+      "name": "bath-rugs",
+      "owners": [
+        "rugs"
+      ]
+    },
+    {
+      "name": "showers",
+      "owners": [
+        "bathroom"
+      ]
+    },
+    {
+      "name": "shower-curtains",
+      "owners": [
+        "bathroom"
+      ]
+    },
+    {
+      "name": "toilets-bidets",
+      "owners": [
+        "bathroom"
+      ]
+    },
+    {
+      "name": "vanity-lights",
+      "owners": [
+        "lighting"
+      ]
+    },
+    {
+      "name": "washers",
+      "owners": [
+        "other"
+      ]
+    },
+    {
+      "name": "music",
+      "owners": [
+        "other"
+      ]
+    },
+    {
+      "name": "ceiling-fans",
+      "owners": [
+        "lighting"
+      ]
+    },
+    {
+      "name": "curtain-rods",
+      "owners": [
+        "decor"
+      ]
+    },
+    {
+      "name": "beams-columns",
+      "owners": [
+        "other"
+      ]
+    },
+    {
+      "name": "breakroom-tables",
+      "owners": [
+        "office"
+      ]
+    }
+  ],
+  "order": {
+    "living": [
+      "sofas",
+      "sectional-sofas",
+      "loveseats",
+      "living-room-sets",
+      "armchairs",
+      "chairs",
+      "lounge-chairs",
+      "ottomans-poufs",
+      "stools",
+      "rocking-chairs",
+      "console-tables",
+      "coffee-tables",
+      "side-end-tables",
+      "highboards-wall-cabinets",
+      "sideboards-storage",
+      "bookcase-shelves",
+      "tv-stands-media-consoles",
+      "fireplaces"
+    ],
+    "bedroom": [
+      "beds",
+      "daybeds",
+      "bed-frames",
+      "headboards",
+      "mattresses",
+      "nightstands",
+      "dressers",
+      "dressing-tables-stools",
+      "benches",
+      "wardrobes"
+    ],
+    "dining": [
+      "dining-tables",
+      "dining-chairs",
+      "dining-sets",
+      "sideboards-storage",
+      "china-cabinets",
+      "fridge-cabinets"
+    ],
+    "kitchen": [
+      "bar-counters",
+      "bar-counter-stools",
+      "large-appliances",
+      "small-appliances",
+      "kitchen-carts",
+      "decor-for-kitchen",
+      "kitchen-islands",
+      "fridge-cabinets"
+    ],
+    "bathroom": [
+      "storage-organization",
+      "bathroom-fixtures",
+      "vanities-sinks",
+      "bathtubs",
+      "showers",
+      "toilets-bidets",
+      "mirrors",
+      "accessories",
+      "shower-curtains",
+      "bins-holders-dryers",
+      "towels"
+    ],
+    "kids": [
+      "kid-beds",
+      "bunk-beds",
+      "cribs",
+      "mattresses",
+      "changing-tables-storage",
+      "kid-chairs-seating",
+      "kid-tables",
+      "toys"
+    ],
+    "office": [
+      "desks",
+      "breakroom-tables",
+      "office-chairs",
+      "storage",
+      "bookcase-shelves",
+      "sideboards-storage",
+      "office-supplies"
+    ],
+    "hallway": [
+      "entry-cabinets",
+      "hooks-hangers",
+      "shoe-storage",
+      "benches",
+      "stools"
+    ],
+    "outdoor": [
+      "outdoor-dining-tables-sets",
+      "outdoor-dining-chairs",
+      "outdoor-sofas-seating-sets",
+      "outdoor-lounge-chairs",
+      "outdoor-ottoman's-stools",
+      "sun-loungers",
+      "outdoor-cushions",
+      "outdoor-benches",
+      "outdoor-coffee-tables",
+      "outdoor-end-tables",
+      "outdoor-kitchen-cabinets",
+      "outdoor-storage",
+      "outdoor-ceiling-lights",
+      "outdoor-wall-lights",
+      "outdoor-lamp-posts",
+      "outdoor-decor",
+      "outdoor-umbrellas",
+      "pergolas-gazebos",
+      "fire-pit-bbq",
+      "outbuildings",
+      "pet-supplies"
+    ],
+    "lighting": [
+      "pendants",
+      "chandeliers",
+      "flush-mounts",
+      "spotlights",
+      "sconces",
+      "vanity-lights",
+      "picture-lights",
+      "table-lamps",
+      "floor-lamps",
+      "outdoor-ceiling-lights",
+      "outdoor-wall-lights",
+      "outdoor-lamp-posts",
+      "ceiling-fans",
+      "lamp-shades"
+    ],
+    "decor": [
+      "wall-art",
+      "pillows-cushions",
+      "curtains-blinds",
+      "curtain-rods",
+      "mirrors",
+      "books",
+      "plants-flowers",
+      "planter-boxes",
+      "sculptures-figurines",
+      "storage-boxes-organization-bins",
+      "vases",
+      "3d-text",
+      "candelsticks",
+      "clocks",
+      "holiday-decor",
+      "radiators",
+      "room-dividers"
+    ],
+    "tableware": [
+      "plates-platters",
+      "bowls",
+      "cutlery",
+      "glasses-cups-mugs",
+      "mats-coasters",
+      "napkins-placemats",
+      "tablecloth",
+      "trays"
+    ],
+    "rugs": [
+      "area-rugs",
+      "runner-rugs",
+      "outdoor-rugs",
+      "door-mats",
+      "bath-rugs"
+    ],
+    "other": [
+      "electronics",
+      "switches-outlets",
+      "beams-columns",
+      "barn-doors",
+      "games",
+      "gym-equipment",
+      "miscellaneous",
+      "music",
+      "stairs",
+      "washers"
+    ]
+  }
+}
