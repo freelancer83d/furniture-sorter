@@ -855,7 +855,9 @@ export default function App() {
         const savedSubcats = await loadMeta("subcats");
         const savedOrder = (await loadMeta("catOrder")) || {};
         const savedTopOrder = (await loadMeta("topOrder")) || [];
-        if (savedSubcats) {
+        // An empty registry counts as "no structure" — otherwise a leftover {}
+        // in storage would block the bundled catalogue from ever loading.
+        if (savedSubcats && Object.keys(savedSubcats).length) {
           // structure already in this browser — never overwrite the user's work
           setSubcats(savedSubcats); setCatList(cats); setCatOrder(savedOrder); setTopOrder(savedTopOrder);
           let maxN = 0;
@@ -874,6 +876,7 @@ export default function App() {
           // This is what lets a new user just drop in a CSV and start sorting.
           try {
             const res = await fetch(`${import.meta.env.BASE_URL}category-structure.json`, { cache: "no-cache" });
+            if (!res.ok) console.warn("Bundled catalogue not found:", res.status, res.url);
             if (res.ok) {
               const data = await res.json();
               const { registry, order, cats: fileCats, top, seq } = parseStructure(data);
@@ -886,7 +889,9 @@ export default function App() {
                 await saveMeta("topOrder", top);
               }
             }
-          } catch { /* no bundled structure — start empty */ }
+          } catch (err) {
+            console.warn("No bundled catalogue loaded:", err);
+          }
         }
       } catch (e) { console.error(e); }
       setLoaded(true);
