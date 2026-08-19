@@ -1767,7 +1767,9 @@ export default function App() {
   }
 
   // ----- empty state -----
-  if (!items.length) {
+  // Only take over the whole screen when there is nothing at all. If a catalogue
+  // is loaded, fall through to the normal layout so the panels stay visible.
+  if (!items.length && !Object.keys(subcats).length && !catList.length) {
     return (
       <div style={{ height: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", fontFamily: "'Inter', system-ui, sans-serif", background: "#f8fafc", color: "#0f172a", gap: 16 }}>
         <style>{spinCss}</style>
@@ -2047,7 +2049,19 @@ export default function App() {
           )}
         </div>
 
-        {filtered.length === 0 ? (
+        {!items.length ? (
+          <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 14, color: "#64748b" }}>
+            <Package size={44} color="#cbd5e1" />
+            <div style={{ fontSize: 17, fontWeight: 600, color: "#0f172a" }}>Catalogue ready</div>
+            <div style={{ fontSize: 13.5, maxWidth: 400, textAlign: "center" }}>
+              The category structure is loaded. Add a CSV exported from Google Sheets and its products will be filed into these categories.
+            </div>
+            <button onClick={onImportClick} disabled={busy}
+              style={{ ...toolBtn, background: "#2563eb", color: "#fff", borderColor: "#2563eb", padding: "9px 16px", fontSize: 13.5 }}>
+              {busy ? <Loader2 size={15} className="spin" /> : <Upload size={15} />} Load CSV
+            </button>
+          </div>
+        ) : filtered.length === 0 ? (
           <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", color: "#94a3b8", fontSize: 14 }}>
             Nothing found. Adjust your search or filter.
           </div>
