@@ -31,7 +31,7 @@ function buildTree(paths) {
   return root;
 }
 
-function TreeNode({ name, path, node, depth, selectedCat, onSelect, onDrop, onRenameSub, onRenameCat, onDelete, dragActive, counts, topCats, ownersOf, onToggleOwner, subIdByPath, orderChildren, onReorderStart, onReorderEnd, onReorderDrop, reorderInfo }) {
+function TreeNode({ name, path, node, depth, selectedCat, onSelect, onDrop, onRenameSub, onRenameCat, onDelete, dragActive, counts, topCats, ownersOf, onToggleOwner, subIdByPath, orderChildren, onReorderStart, onReorderEnd, onReorderDrop, onCatReorderStart, onCatReorderDrop, reorderInfo }) {
   const [open, setOpen] = useState(true);
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(name);
@@ -76,18 +76,23 @@ function TreeNode({ name, path, node, depth, selectedCat, onSelect, onDrop, onRe
   return (
     <div>
       <div
-        draggable={isSubcat && !editing}
-        onDragStart={isSubcat && !editing ? (e) => {
+        draggable={!editing}
+        onDragStart={!editing ? (e) => {
           e.stopPropagation();
           e.dataTransfer.effectAllowed = "move";
-          onReorderStart(path.split(".")[0], subId);
+          if (isSubcat) onReorderStart(path.split(".")[0], subId);
+          else onCatReorderStart(path);
         } : undefined}
         onDragEnd={() => { setDropEdge(null); onReorderEnd(); }}
         onClick={(e) => onSelect(path, e)}
         onDragOver={(e) => {
           e.preventDefault();
-          if (isSubcat && reorderInfo && reorderInfo.parentCat === path.split(".")[0]) {
+          if (isSubcat && reorderInfo?.kind === "sub" && reorderInfo.parentCat === path.split(".")[0]) {
             // reorder within the same category — show insertion edge
+            const r = e.currentTarget.getBoundingClientRect();
+            setDropEdge(e.clientY < r.top + r.height / 2 ? "top" : "bottom");
+            setOver(false);
+          } else if (!isSubcat && reorderInfo?.kind === "cat") {
             const r = e.currentTarget.getBoundingClientRect();
             setDropEdge(e.clientY < r.top + r.height / 2 ? "top" : "bottom");
             setOver(false);
@@ -98,9 +103,12 @@ function TreeNode({ name, path, node, depth, selectedCat, onSelect, onDrop, onRe
         onDragLeave={() => { setOver(false); setDropEdge(null); }}
         onDrop={(e) => {
           e.preventDefault(); setOver(false);
-          if (isSubcat && reorderInfo && reorderInfo.parentCat === path.split(".")[0] && subId) {
+          if (isSubcat && reorderInfo?.kind === "sub" && reorderInfo.parentCat === path.split(".")[0] && subId) {
             const edge = dropEdge; setDropEdge(null);
             onReorderDrop(path.split(".")[0], subId, edge);
+          } else if (!isSubcat && reorderInfo?.kind === "cat") {
+            const edge = dropEdge; setDropEdge(null);
+            onCatReorderDrop(path, edge);
           } else {
             onDrop(path);
           }
@@ -141,7 +149,7 @@ function TreeNode({ name, path, node, depth, selectedCat, onSelect, onDrop, onRe
         ) : (
           <span style={{ flex: 1, whiteSpace: "nowrap" }}>{name}</span>
         )}
-        {!editing && count > 0 && (
+        {!editing && (
           <span style={{ fontSize: 11,
             color: over && dragActive ? "#95b4d2" : isSel ? "#7ea38e" : isSubcat ? "#64748b" : "#cbd5e1",
             background: "transparent", borderRadius: 10, padding: "0 4px", minWidth: 18, textAlign: "right" }}>{count}</span>
@@ -187,7 +195,7 @@ function TreeNode({ name, path, node, depth, selectedCat, onSelect, onDrop, onRe
           depth={depth + 1} selectedCat={selectedCat} onSelect={onSelect} onDrop={onDrop}
           onRenameSub={onRenameSub} onRenameCat={onRenameCat} onDelete={onDelete} dragActive={dragActive} counts={counts}
           topCats={topCats} ownersOf={ownersOf} onToggleOwner={onToggleOwner} subIdByPath={subIdByPath}
-          orderChildren={orderChildren} onReorderStart={onReorderStart} onReorderEnd={onReorderEnd} onReorderDrop={onReorderDrop} reorderInfo={reorderInfo} />
+          orderChildren={orderChildren} onReorderStart={onReorderStart} onReorderEnd={onReorderEnd} onReorderDrop={onReorderDrop} onCatReorderStart={onCatReorderStart} onCatReorderDrop={onCatReorderDrop} reorderInfo={reorderInfo} />
       ))}
       </div>
       )}
@@ -553,7 +561,7 @@ function SubcatRow({ subId, leaf, count, owners, topCats, onToggleOwner, onNavig
   const orphan = owners.length === 0;
   return (
     <div>
-      <div onClick={(e) => !editing && onNavigate(e)}
+      <div data-subrow={subId} onClick={(e) => !editing && onNavigate(e)}
         onDragOver={(e) => { if (canAcceptItems && dragActive) { e.preventDefault(); setOverDrop(true); } }}
         onDragLeave={() => setOverDrop(false)}
         onDrop={(e) => { if (canAcceptItems && dragActive) { e.preventDefault(); setOverDrop(false); onDropItems(); } }}
@@ -708,6 +716,9 @@ export default function App() {
   // { [categoryName]: [subId, ...] }. Subcategories not listed sort after,
   // alphabetically. The second panel always stays alphabetical.
   const [catOrder, setCatOrder] = useState({});
+  // Manual order of top-level categories (array of names); anything not listed
+  // falls back to alphabetical after the ordered ones.
+  const [topOrder, setTopOrder] = useState([]);
   const [loaded, setLoaded] = useState(false);
   const [busy, setBusy] = useState(false);
   const [search, setSearch] = useState("");
@@ -723,12 +734,16 @@ export default function App() {
   // ANY selected filter. Ctrl/Cmd+click a category or subcategory to toggle.
   const [multiFilter, setMultiFilter] = useState([]);
   const [backupsOpen, setBackupsOpen] = useState(false);
+  const [structOpen, setStructOpen] = useState(false);
   const [selectedIds, setSelectedIds] = useState(new Set());
   const [dragActive, setDragActive] = useState(false);
   const [toast, setToast] = useState(null);
   const lastClicked = useRef(null);
   const dragSet = useRef(new Set());
   const fileRef = useRef(null);
+  const structRef = useRef(null);
+  // Names from the last import that had no matching subcategory in the structure.
+  const [unmatched, setUnmatched] = useState(null);
   const subIdSeq = useRef(1);
 
   const newSubId = () => `s${subIdSeq.current++}`;
@@ -810,6 +825,27 @@ export default function App() {
     return { nextItems, registry, cats: [...cats].sort() };
   }, []);
 
+  // Turn a structure file (categories + subcategories + order, no products)
+  // into the app's model. Returns fresh subIds keyed by lowercased name.
+  const parseStructure = useCallback((data) => {
+    const registry = {}; const byName = {};
+    let seq = 1;
+    for (const sc of (data.subcategories || [])) {
+      if (!sc || !sc.name) continue;
+      const id = `s${seq++}`;
+      registry[id] = { name: sc.name, owners: Array.isArray(sc.owners) ? sc.owners.slice() : [] };
+      byName[sc.name.trim().toLowerCase()] = id;
+    }
+    const order = {};
+    for (const [cat, names] of Object.entries(data.order || {})) {
+      const ids = (names || []).map((n) => byName[String(n).trim().toLowerCase()]).filter(Boolean);
+      if (ids.length) order[cat] = ids;
+    }
+    const cats = Array.isArray(data.categories) ? [...new Set(data.categories)] : [];
+    const top = Array.isArray(data.topOrder) ? data.topOrder.slice() : [];
+    return { registry, byName, order, cats, top, seq };
+  }, []);
+
   // ----- load from IndexedDB on start -----
   useEffect(() => {
     (async () => {
@@ -818,29 +854,48 @@ export default function App() {
         const cats = (await loadMeta("categories")) || [];
         const savedSubcats = await loadMeta("subcats");
         const savedOrder = (await loadMeta("catOrder")) || {};
-        if (saved.length) {
-          if (savedSubcats) {
-            // already new format
-            setItems(saved); setSubcats(savedSubcats); setCatList(cats); setCatOrder(savedOrder);
-            let maxN = 0;
-            for (const k of Object.keys(savedSubcats)) { const n = parseInt(k.slice(1), 10); if (n > maxN) maxN = n; }
-            subIdSeq.current = maxN + 1;
-          } else {
-            // migrate legacy format
-            const owners = (await loadMeta("subcatOwners")) || {};
-            const { nextItems, registry } = migrate(saved, owners);
-            setItems(nextItems); setSubcats(registry); setCatList(cats);
-            saveAllItems(nextItems).catch(console.error);
-            saveMeta("subcats", registry).catch(console.error);
-          }
+        const savedTopOrder = (await loadMeta("topOrder")) || [];
+        if (savedSubcats) {
+          // structure already in this browser — never overwrite the user's work
+          setSubcats(savedSubcats); setCatList(cats); setCatOrder(savedOrder); setTopOrder(savedTopOrder);
+          let maxN = 0;
+          for (const k of Object.keys(savedSubcats)) { const n = parseInt(k.slice(1), 10); if (n > maxN) maxN = n; }
+          subIdSeq.current = maxN + 1;
+          if (saved.length) setItems(saved);
+        } else if (saved.length) {
+          // legacy data without a registry — migrate it
+          const owners = (await loadMeta("subcatOwners")) || {};
+          const { nextItems, registry } = migrate(saved, owners);
+          setItems(nextItems); setSubcats(registry); setCatList(cats);
+          saveAllItems(nextItems).catch(console.error);
+          saveMeta("subcats", registry).catch(console.error);
+        } else {
+          // Nothing stored yet: load the catalogue shipped with the app, if any.
+          // This is what lets a new user just drop in a CSV and start sorting.
+          try {
+            const res = await fetch(`${import.meta.env.BASE_URL}category-structure.json`, { cache: "no-cache" });
+            if (res.ok) {
+              const data = await res.json();
+              const { registry, order, cats: fileCats, top, seq } = parseStructure(data);
+              if (Object.keys(registry).length) {
+                subIdSeq.current = seq;
+                setSubcats(registry); setCatList(fileCats.sort()); setCatOrder(order); setTopOrder(top);
+                await saveMeta("subcats", registry);
+                await saveMeta("categories", fileCats.sort());
+                await saveMeta("catOrder", order);
+                await saveMeta("topOrder", top);
+              }
+            }
+          } catch { /* no bundled structure — start empty */ }
         }
       } catch (e) { console.error(e); }
       setLoaded(true);
     })();
-  }, [migrate]);
+  }, [migrate, parseStructure]);
 
   const persistSubcats = (next) => { saveMeta("subcats", next).catch(console.error); };
   const persistOrder = (next) => { saveMeta("catOrder", next).catch(console.error); };
+  const persistTopOrder = (next) => { saveMeta("topOrder", next).catch(console.error); };
 
   // ---- Automatic backups ----
   // A backup stores only what sorting changes: each item's assignment plus the
@@ -905,6 +960,7 @@ export default function App() {
   const subcatsRef = useRef(subcats);
   const catListRef = useRef(catList);
   const catOrderRef = useRef(catOrder);
+  const treeRef = useRef({});
   useEffect(() => { itemsRef.current = items; }, [items]);
   useEffect(() => { subcatsRef.current = subcats; }, [subcats]);
   useEffect(() => { catListRef.current = catList; }, [catList]);
@@ -956,6 +1012,13 @@ export default function App() {
   }, [search]);
 
   const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(null), 3500); };
+
+  // One-way sync: what you type in the card search also filters the categories
+  // tree. The subcategories panel keeps its own independent filter, and typing
+  // in a panel's filter never touches the card search.
+  useEffect(() => {
+    setCatSearch(search);
+  }, [search]);
 
   // All full display paths an item belongs to. Driven entirely by the stable
   // registry — no string parsing, no re-anchoring, no leaf resolution.
@@ -1014,7 +1077,14 @@ export default function App() {
     }
     return buildTree([...keep]);
   }, [allPaths, catSearch]);
-  const topLevel = Object.keys(tree).sort();
+  useEffect(() => { treeRef.current = tree; }, [tree]);
+
+  const topLevel = useMemo(() => {
+    const present = Object.keys(tree);
+    const ordered = topOrder.filter((c) => present.includes(c));
+    const rest = present.filter((c) => !ordered.includes(c)).sort();
+    return [...ordered, ...rest];
+  }, [tree, topOrder]);
   // full list of top-level categories (unaffected by the tree filter) for the checklist
   const topCats = useMemo(() => {
     const s = new Set();
@@ -1042,6 +1112,14 @@ export default function App() {
   // Owners of a subcategory by subId.
   const ownersOf = useCallback((subId) => (subcats[subId] ? subcats[subId].owners : []), [subcats]);
 
+  // Subcategory name -> subId. Names are unique, so this is the key used to file
+  // a fresh product export into an existing structure.
+  const subIdByName = useMemo(() => {
+    const m = {};
+    for (const [id, sc] of Object.entries(subcats)) m[sc.name.trim().toLowerCase()] = id;
+    return m;
+  }, [subcats]);
+
   // Order subcategory children of a top-level category by the manual list,
   // falling back to alphabetical for any not in the list. childNames are leaf
   // names; we map them to subIds via the display path.
@@ -1060,15 +1138,37 @@ export default function App() {
   }, [catOrder]);
 
   // Reorder subcategories within a category via drag & drop (main panel).
-  const [reorderInfo, setReorderInfo] = useState(null); // { parentCat, subId }
-  const onReorderStart = (parentCat, subId) => setReorderInfo({ parentCat, subId });
+  const [reorderInfo, setReorderInfo] = useState(null); // {kind:'sub'|'cat', ...}
+  const onReorderStart = (parentCat, subId) => setReorderInfo({ kind: "sub", parentCat, subId });
+  const onCatReorderStart = (name) => setReorderInfo({ kind: "cat", name });
+
+  // Drop a dragged top-level category before/after another one.
+  const onCatReorderDrop = (targetCat, edge) => {
+    const info = reorderInfo;
+    setReorderInfo(null);
+    if (!info || info.kind !== "cat" || info.name === targetCat) return;
+    pushHistory("reorder categories");
+    setTopOrder((prev) => {
+      const present = Object.keys(treeRef.current || {});
+      const seeded = [
+        ...prev.filter((c) => present.includes(c)),
+        ...present.filter((c) => !prev.includes(c)).sort(),
+      ].filter((c) => c !== info.name);
+      let ti = seeded.indexOf(targetCat);
+      if (ti === -1) return prev;
+      if (edge === "bottom") ti += 1;
+      seeded.splice(ti, 0, info.name);
+      persistTopOrder(seeded);
+      return seeded;
+    });
+  };
   const onReorderEnd = () => setReorderInfo(null);
 
   // Drop the dragged subcategory relative to the target subId (before/after).
   const onReorderDrop = (parentCat, targetSubId, edge) => {
     const info = reorderInfo;
     setReorderInfo(null);
-    if (!info || info.parentCat !== parentCat) return;
+    if (!info || info.kind !== "sub" || info.parentCat !== parentCat) return;
     const draggedId = info.subId;
     if (draggedId === targetSubId) return;
     pushHistory("reorder subcategories");
@@ -1221,6 +1321,119 @@ export default function App() {
   const persistCats = (next) => { saveMeta("categories", next).catch(console.error); };
 
   // ----- import -----
+  // Place freshly parsed items into the EXISTING structure, matching by
+  // subcategory name. Parent categories in the file are ignored on purpose —
+  // the saved structure is the source of truth for where things live.
+  const buildIntoStructure = useCallback((parsed) => {
+    const misses = new Map();
+    const knownCats = new Set(catListRef.current);
+    const nextItems = parsed.map((it) => {
+      const base = { id: it.id, name: it.name, img: it.img, admin: it.admin, subId: null, category: "" };
+      const raw = (it.rawCategory || it.category || "").trim();
+      if (!raw) return base;
+      const first = raw.split(",")[0].trim();
+      const dot = first.indexOf(".");
+      if (dot === -1) return { ...base, category: knownCats.has(first) ? first : "" };
+      const leaf = first.slice(dot + 1).trim();
+      const sid = subIdByName[leaf.toLowerCase()];
+      if (sid) return { ...base, subId: sid };
+      misses.set(leaf, (misses.get(leaf) || 0) + 1);
+      return base;
+    });
+    const report = [...misses.entries()].map(([name, count]) => ({ name, count }))
+      .sort((a, b) => b.count - a.count);
+    return { nextItems, report };
+  }, [subIdByName]);
+
+  // ---- structure file (categories + subcategories + order), no products ----
+  const exportStructure = () => {
+    const subcategories = Object.values(subcats).map((sc) => ({ name: sc.name, owners: sc.owners }));
+    const order = {};
+    for (const [cat, ids] of Object.entries(catOrder)) {
+      const names = ids.map((id) => subcats[id]?.name).filter(Boolean);
+      if (names.length) order[cat] = names;
+    }
+    const data = { version: 1, categories: catList, subcategories, order, topOrder };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = "category-structure.json"; a.click();
+    URL.revokeObjectURL(url);
+    showToast(`Structure exported: ${catList.length} categories, ${subcategories.length} subcategories.`);
+  };
+
+  const onStructureFile = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setBusy(true);
+    try {
+      const data = JSON.parse(await file.text());
+      if (!Array.isArray(data.subcategories)) throw new Error("bad format");
+      pushHistory("import structure");
+      const parsedStruct = parseStructure(data);
+      const registry = parsedStruct.registry;
+      const byName = parsedStruct.byName;
+      const order = parsedStruct.order;
+      const top = parsedStruct.top;
+      subIdSeq.current = parsedStruct.seq;
+      const cats = parsedStruct.cats.slice().sort();
+      // keep any loaded products, re-linking them to the new structure by name
+      const prevSubcats = subcatsRef.current;
+      const remapped = itemsRef.current.map((it) => {
+        if (!it.subId) return it;
+        const oldName = prevSubcats[it.subId]?.name;
+        const nid = oldName ? byName[oldName.trim().toLowerCase()] : null;
+        return nid ? { ...it, subId: nid } : { ...it, subId: null, category: "" };
+      });
+      setSubcats(registry); setCatList(cats); setCatOrder(order); setTopOrder(top); setItems(remapped);
+      setSelectedCat(null); setSelectedIds(new Set()); setUnmatched(null);
+      await saveMeta("subcats", registry);
+      await saveMeta("categories", cats);
+      await saveMeta("catOrder", order);
+      await saveMeta("topOrder", top);
+      await saveAllItems(remapped);
+      showToast(`Structure loaded: ${cats.length} categories, ${Object.keys(registry).length} subcategories.`);
+    } catch (err) {
+      console.error(err); showToast("Could not read that structure file.");
+    }
+    setBusy(false);
+    e.target.value = "";
+  };
+
+  // Re-apply the catalogue that ships with the app, discarding local structure
+  // edits. Products stay and are re-linked by subcategory name.
+  const reloadBundledStructure = async () => {
+    setBusy(true);
+    try {
+      const res = await fetch(`${import.meta.env.BASE_URL}category-structure.json`, { cache: "no-cache" });
+      if (!res.ok) throw new Error("not found");
+      const data = await res.json();
+      const { registry, byName, order, cats, top, seq } = parseStructure(data);
+      if (!Object.keys(registry).length) throw new Error("empty");
+      pushHistory("reload bundled structure");
+      subIdSeq.current = seq;
+      const prevSubcats = subcatsRef.current;
+      const remapped = itemsRef.current.map((it) => {
+        if (!it.subId) return it;
+        const oldName = prevSubcats[it.subId]?.name;
+        const nid = oldName ? byName[oldName.trim().toLowerCase()] : null;
+        return nid ? { ...it, subId: nid } : { ...it, subId: null, category: "" };
+      });
+      const sortedCats = cats.slice().sort();
+      setSubcats(registry); setCatList(sortedCats); setCatOrder(order); setTopOrder(top); setItems(remapped);
+      setSelectedCat(null); setSelectedIds(new Set()); setUnmatched(null);
+      await saveMeta("subcats", registry);
+      await saveMeta("categories", sortedCats);
+      await saveMeta("catOrder", order);
+      await saveMeta("topOrder", top);
+      await saveAllItems(remapped);
+      showToast(`Bundled catalogue loaded: ${sortedCats.length} categories, ${Object.keys(registry).length} subcategories.`);
+    } catch {
+      showToast("No bundled catalogue found in the app folder.");
+    }
+    setBusy(false);
+  };
+
   const onImportClick = () => fileRef.current?.click();
   const onFile = async (e) => {
     const file = e.target.files?.[0];
@@ -1230,20 +1443,38 @@ export default function App() {
       const text = await file.text();
       const { items: parsed, warnings } = parseCsv(text);
       if (!parsed.length) { showToast("No data rows found in the file."); setBusy(false); return; }
-      // Build the model, restoring multi-category membership (no collapsing).
-      const { nextItems, registry, cats } = buildFromImport(parsed);
-      const multi = Object.values(registry).filter((sc) => sc.owners.length > 1).length;
-      setItems(nextItems);
-      setSubcats(registry);
-      setCatList(cats);
-      setCatOrder({});
-      setSelectedCat(null); setOnlyUnsorted(false); setSelectedIds(new Set());
-      await saveAllItems(nextItems);
-      await saveMeta("subcats", registry);
-      await saveMeta("categories", cats);
-      await saveMeta("catOrder", {});
-      await saveMeta("subcatOwners", null); // clear legacy key
-      showToast(`Loaded ${nextItems.length} items.` + (multi ? ` ${multi} subcategories span multiple categories.` : "") + (warnings.length ? " " + warnings.join(" ") : ""));
+      const hasStructure = Object.keys(subcatsRef.current).length > 0;
+      const keepStructure = hasStructure && confirm(
+        "Keep your current category structure?\n\n" +
+        "OK — replace the products and file them into the existing structure.\n" +
+        "Cancel — rebuild the structure from this file as well."
+      );
+
+      if (keepStructure) {
+        const { nextItems, report } = buildIntoStructure(parsed);
+        const placed = nextItems.filter((i) => i.subId || i.category).length;
+        setItems(nextItems);
+        setSelectedCat(null); setOnlyUnsorted(false); setSelectedIds(new Set());
+        setUnmatched(report.length ? report : null);
+        await saveAllItems(nextItems);
+        showToast(`Loaded ${nextItems.length} items — ${placed} filed, ${nextItems.length - placed} uncategorized.`);
+      } else {
+        // Build the model, restoring multi-category membership (no collapsing).
+        const { nextItems, registry, cats } = buildFromImport(parsed);
+        const multi = Object.values(registry).filter((sc) => sc.owners.length > 1).length;
+        setItems(nextItems);
+        setSubcats(registry);
+        setCatList(cats);
+        setCatOrder({});
+        setSelectedCat(null); setOnlyUnsorted(false); setSelectedIds(new Set());
+        setUnmatched(null);
+        await saveAllItems(nextItems);
+        await saveMeta("subcats", registry);
+        await saveMeta("categories", cats);
+        await saveMeta("catOrder", {});
+        await saveMeta("subcatOwners", null); // clear legacy key
+        showToast(`Loaded ${nextItems.length} items.` + (multi ? ` ${multi} subcategories span multiple categories.` : "") + (warnings.length ? " " + warnings.join(" ") : ""));
+      }
     } catch (err) {
       console.error(err); showToast("Failed to read the file.");
     }
@@ -1299,6 +1530,46 @@ export default function App() {
     });
     setSearch("");
   };
+  // Arrow-key walk through the subcategories panel: Down/Up step to the next or
+  // previous subcategory so you can review them one by one. Empty subcategories
+  // (and ones with no category at all) are skipped — there is nothing to review.
+  const navigableSubcats = useMemo(() => {
+    const q = subcatSearch.trim().toLowerCase();
+    return allSubcats.filter((sc) =>
+      sc.count > 0 &&
+      ownersOf(sc.subId).length > 0 &&
+      (!q || sc.leaf.toLowerCase().includes(q))
+    );
+  }, [allSubcats, subcatSearch, ownersOf]);
+
+  useEffect(() => {
+    const onKey = (e) => {
+      if (e.key !== "ArrowDown" && e.key !== "ArrowUp") return;
+      const tag = (e.target.tagName || "").toLowerCase();
+      if (tag === "input" || tag === "textarea") return;
+      if (subPanelCollapsed || !navigableSubcats.length) return;
+      e.preventDefault();
+      const cur = navigableSubcats.findIndex((sc) => {
+        const owners = ownersOf(sc.subId);
+        return owners.length && selectedCat === `${owners[0]}.${sc.leaf}`;
+      });
+      let next;
+      if (cur === -1) next = e.key === "ArrowDown" ? 0 : navigableSubcats.length - 1;
+      else next = e.key === "ArrowDown" ? cur + 1 : cur - 1;
+      if (next < 0 || next >= navigableSubcats.length) return;
+      const sc = navigableSubcats[next];
+      const owners = ownersOf(sc.subId);
+      setMultiFilter([]);
+      setOnlyUnsorted(false);
+      setSelectedCat(`${owners[0]}.${sc.leaf}`);
+      requestAnimationFrame(() => {
+        document.querySelector(`[data-subrow="${sc.subId}"]`)?.scrollIntoView({ block: "nearest" });
+      });
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [navigableSubcats, ownersOf, selectedCat, subPanelCollapsed]);
+
   // Toggle a path in the multi-filter (Ctrl/Cmd+click in the panels).
   const toggleMultiFilter = (path) => {
     setMultiFilter((prev) => prev.includes(path) ? prev.filter((p) => p !== path) : [...prev, path]);
@@ -1478,7 +1749,7 @@ export default function App() {
   const resetAll = async () => {
     if (!confirm("Clear all data from the app? This won't touch your original file.")) return;
     await clearAll();
-    setItems([]); setCatList([]); setSubcats({}); setCatOrder({}); setSelectedCat(null); setSelectedIds(new Set());
+    setItems([]); setCatList([]); setSubcats({}); setCatOrder({}); setTopOrder([]); setSelectedCat(null); setSelectedIds(new Set());
     showToast("Data cleared.");
   };
 
@@ -1573,7 +1844,7 @@ export default function App() {
               onDelete={(idOrPath, isSub) => isSub ? deleteSubcat(idOrPath) : deleteCategory(idOrPath)}
               dragActive={dragActive} counts={counts}
               topCats={topCats} ownersOf={ownersOf} onToggleOwner={toggleSubcatOwner} subIdByPath={subIdByPath}
-              orderChildren={orderChildren} onReorderStart={onReorderStart} onReorderEnd={onReorderEnd} onReorderDrop={onReorderDrop} reorderInfo={reorderInfo} />
+              orderChildren={orderChildren} onReorderStart={onReorderStart} onReorderEnd={onReorderEnd} onReorderDrop={onReorderDrop} onCatReorderStart={onCatReorderStart} onCatReorderDrop={onCatReorderDrop} reorderInfo={reorderInfo} />
           ))}
         </div>
         <div style={{ padding: 10, borderTop: "1px solid #1e293b", display: "flex", flexDirection: "column", gap: 6 }}>
@@ -1683,13 +1954,63 @@ export default function App() {
               </div>
             )}
           </div>
+          <div style={{ position: "relative" }}>
+            <button onClick={() => setStructOpen((v) => !v)} title="Category structure" style={toolBtn}><Package size={14} /> Structure</button>
+            {structOpen && (
+              <div style={{ position: "absolute", right: 0, top: "100%", marginTop: 4, background: "#fff", border: "1px solid #e2e8f0", borderRadius: 8, boxShadow: "0 8px 24px rgba(0,0,0,.12)", zIndex: 100, minWidth: 280, padding: 6 }}>
+                <div style={{ fontSize: 11, color: "#64748b", padding: "4px 8px 6px" }}>
+                  The structure holds categories, subcategories and their order — no products.
+                </div>
+                <button onClick={() => { setStructOpen(false); exportStructure(); }}
+                  style={{ display: "block", width: "100%", textAlign: "left", padding: "7px 8px", border: "none", background: "transparent", cursor: "pointer", fontSize: 12.5, borderRadius: 6 }}>
+                  Export structure…
+                </button>
+                <button onClick={() => { setStructOpen(false); structRef.current?.click(); }}
+                  style={{ display: "block", width: "100%", textAlign: "left", padding: "7px 8px", border: "none", background: "transparent", cursor: "pointer", fontSize: 12.5, borderRadius: 6 }}>
+                  Import structure…
+                </button>
+                <div style={{ borderTop: "1px solid #e2e8f0", marginTop: 4, paddingTop: 4 }}>
+                  <button onClick={() => { setStructOpen(false); reloadBundledStructure(); }}
+                    style={{ display: "block", width: "100%", textAlign: "left", padding: "7px 8px", border: "none", background: "transparent", cursor: "pointer", fontSize: 12.5, color: "#2563eb", borderRadius: 6 }}>
+                    Reload catalogue shipped with the app
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
           <button onClick={onImportClick} style={toolBtn}><Upload size={14} /> Import</button>
           <button onClick={exportCsv} style={{ ...toolBtn, background: "#16a34a", color: "#fff", borderColor: "#16a34a" }}>
             <Download size={14} /> Export CSV
           </button>
           <button onClick={resetAll} style={{ ...toolBtn, color: "#dc2626" }}><Trash2 size={14} /></button>
           <input ref={fileRef} type="file" accept=".csv,text/csv" onChange={onFile} style={{ display: "none" }} />
+          <input ref={structRef} type="file" accept=".json,application/json" onChange={onStructureFile} style={{ display: "none" }} />
         </div>
+
+        {unmatched && (
+          <div style={{ padding: "10px 16px", background: "#fff7ed", borderBottom: "1px solid #fed7aa", fontSize: 12.5 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+              <AlertTriangle size={14} color="#c2410c" />
+              <span style={{ color: "#9a3412", fontWeight: 600 }}>
+                {unmatched.length} subcategor{unmatched.length === 1 ? "y" : "ies"} from the file are not in your structure — those items are uncategorized
+              </span>
+              <div style={{ flex: 1 }} />
+              <button onClick={() => {
+                const text = unmatched.map((u) => `${u.name}\t${u.count}`).join("\n");
+                navigator.clipboard?.writeText(text);
+                showToast("List copied.");
+              }} style={{ ...toolBtn, padding: "3px 8px", fontSize: 12 }}>Copy list</button>
+              <button onClick={() => setUnmatched(null)} style={{ border: "none", background: "transparent", cursor: "pointer", color: "#9a3412", display: "flex", padding: 2 }}><X size={14} /></button>
+            </div>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+              {unmatched.map((u) => (
+                <span key={u.name} style={{ background: "#fff", border: "1px solid #fdba74", borderRadius: 999, padding: "2px 9px", color: "#7c2d12" }}>
+                  {u.name} <span style={{ color: "#c2410c" }}>· {u.count}</span>
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
 
         {multiFilter.length > 0 && (
           <div style={{ padding: "8px 16px", background: "#fffbeb", borderBottom: "1px solid #fde68a", display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", fontSize: 12.5 }}>
