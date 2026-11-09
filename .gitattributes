@@ -1,0 +1,3 @@
+# Store text files with LF in the repository; Git converts them to the
+# platform line endings on checkout (CRLF on Windows), so status stays clean.
+* text=auto

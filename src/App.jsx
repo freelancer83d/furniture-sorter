@@ -2095,9 +2095,9 @@ export default function App() {
               </div>
             )}
           </div>
-          <button onClick={onImportClick} style={toolBtn}><Upload size={14} /> Import</button>
+          <button onClick={onImportClick} style={toolBtn}><Download size={14} /> Import</button>
           <button onClick={exportCsv} style={{ ...toolBtn, background: "#16a34a", color: "#fff", borderColor: "#16a34a" }}>
-            <Download size={14} /> Export CSV
+            <Upload size={14} /> Export CSV
           </button>
           <button onClick={resetAll} style={{ ...toolBtn, color: "#dc2626" }}><Trash2 size={14} /></button>
           <input ref={fileRef} type="file" accept=".csv,text/csv" onChange={onFile} style={{ display: "none" }} />
