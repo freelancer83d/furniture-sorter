@@ -1,47 +1,47 @@
-# Сортировщик мебели
+# Furniture Sorter
 
-Локальный инструмент для сортировки предметов по категориям перетаскиванием.
-Работает офлайн, данные хранятся в браузере (IndexedDB) и не теряются между сессиями.
+A local tool for sorting items into categories by drag and drop.
+It works offline; data is stored in the browser (IndexedDB) and survives between sessions.
 
-## Запуск
+## Running
 
-Нужен Node.js 18+.
+Requires Node.js 18+.
 
 ```bash
 npm install
 npm run dev
 ```
 
-Открой адрес из терминала (обычно http://localhost:5173).
+Open the address shown in the terminal (usually http://localhost:5173).
 
-## Как пользоваться
+## How to use
 
-1. **Импорт** — нажми «Загрузить CSV» и выбери файл, выгруженный из Google Sheets.
-   - Строки-отступы сверху пропускаются автоматически (ищется строка с колонкой `id`).
-   - Если у предмета несколько категорий через запятую — при импорте берётся только первая (исходные категории могут быть разными и неправильными, так проще начать сортировку с чистого листа).
-   - Картинка берётся из колонки `image url`.
-2. **Сортировка**
-   - Клик по карточке — выделить. Shift+клик — выделить диапазон.
-   - «Выделить всё» берёт все отфильтрованные карточки.
-   - Перетащи карточку (или выделенную группу) на категорию слева.
-   - Или используй выпадашку «Переместить в…» в синей панели.
-3. **Категории** — создавай, переименовывай (карандаш), удаляй (корзина).
-   Пустые категории не исчезают сами — только вручную.
-4. **Экспорт** — «Экспорт CSV» скачивает новую таблицу (id, name, categories, admin url, image url, x (width), y (depth), z (height)).
-   ID никогда не меняется. В колонке `categories` при экспорте может быть несколько категорий через запятую.
-   Колонка `category ids` содержит ID этих категорий в админке (см. ниже). Если категории нет в списке ID, ячейка остаётся пустой, а приложение предупреждает об этом.
+1. **Import**: click **Load CSV** (or **Import**) and choose a file exported from Google Sheets.
+   - Padding rows at the top are skipped automatically (the row with an `id` column is used as the header).
+   - If an item has several comma-separated categories, only the first one is taken on import (the source categories can be inconsistent or wrong, so sorting starts from a clean slate).
+   - The image comes from the `image url` column.
+2. **Sorting**
+   - Click a card to select it. Shift+click selects a range.
+   - **Select all** takes every filtered card.
+   - Drag a card (or the selected group) onto a category on the left.
+   - Or use the **Move to…** dropdown in the blue bar.
+3. **Categories**: create, rename (pencil) and delete (trash can).
+   Empty categories do not disappear on their own, only when deleted manually.
+4. **Export**: **Export CSV** downloads a new table (id, name, categories, category ids, admin url, image url, x (width), y (depth), z (height)).
+   IDs never change. On export the `categories` column can contain several comma-separated categories.
+   The `category ids` column holds the admin ids of those categories (see below). If a category is not in the id list, the cell is left empty and the app shows a warning.
 
-Кнопка с корзиной справа вверху очищает данные приложения (исходный файл не трогается).
+The trash can button in the top right clears the app's data (the original file is not touched).
 
-## Связь с админкой
+## Admin integration
 
-- `public/category-ids.json` — ID всех категорий админки (`living.sofas` → 79 и т. д.). Приложение загружает его само; новый файл можно подключить через **Structure → Import admin category ids…**.
-- В админке подкатегории с одинаковым названием в разных разделах связаны (например, Benches в Bedroom и Hallway ставятся вместе), это перечислено в `linkedGroups`.
-- `userscript/designfiles-sorter-bridge.user.js` — скрипт для Tampermonkey: выгружает товары из админки в CSV для сортировщика и применяет категории из экспорта обратно (сначала сухой прогон, сохранение только после подтверждения). Если в CSV есть `category ids`, скрипт использует их напрямую.
+- `public/category-ids.json`: ids of all admin categories (`living.sofas` → 79 and so on). The app loads it automatically; a newer file can be loaded via **Structure → Import admin category ids…**.
+- In the admin, subcategories with the same name in different sections are linked (for example, Benches in Bedroom and Hallway are ticked together); these groups are listed under `linkedGroups`.
+- `userscript/designfiles-sorter-bridge.user.js`: a Tampermonkey script that exports items from the admin to a CSV for the sorter and applies categories from a sorter export back to the admin (a dry run first, saving only after confirmation). If the CSV has `category ids`, the script uses them directly.
 
-## Сборка для раздачи
+## Building for distribution
 
 ```bash
-npm run build     # результат в папке dist/
-npm run preview   # локальный просмотр собранной версии
+npm run build     # output in the dist/ folder
+npm run preview   # local preview of the built version
 ```
