@@ -1874,7 +1874,7 @@ export default function App() {
           Load a CSV file exported from Google Sheets. Your data is saved in the browser — it will still be here next time you open the app.
         </div>
         <button onClick={onImportClick} disabled={busy} style={{ ...toolBtn, background: "#2563eb", color: "#fff", borderColor: "#2563eb", padding: "10px 18px", fontSize: 14 }}>
-          {busy ? <Loader2 size={16} className="spin" /> : <Upload size={16} />} Load CSV
+          {busy ? <Loader2 size={16} className="spin" /> : <Download size={16} />} Load CSV
         </button>
         <input ref={fileRef} type="file" accept=".csv,text/csv" onChange={onFile} style={{ display: "none" }} />
         {toast && <div style={toastStyle}>{toast}</div>}
@@ -2169,7 +2169,7 @@ export default function App() {
             </div>
             <button onClick={onImportClick} disabled={busy}
               style={{ ...toolBtn, background: "#2563eb", color: "#fff", borderColor: "#2563eb", padding: "9px 16px", fontSize: 13.5 }}>
-              {busy ? <Loader2 size={15} className="spin" /> : <Upload size={15} />} Load CSV
+              {busy ? <Loader2 size={15} className="spin" /> : <Download size={15} />} Load CSV
             </button>
           </div>
         ) : filtered.length === 0 ? (
