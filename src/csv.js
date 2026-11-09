@@ -9,13 +9,13 @@ export function firstCategory(raw) {
 // Header aliases → our canonical fields. Case-insensitive, trimmed.
 const ALIASES = {
   id: ["id"],
-  name: ["name", "title", "название", "назва"],
-  category: ["categories", "category", "категория", "категорії", "категорія"],
-  img: ["image url", "image_url", "imageurl", "image", "img", "картинка", "изображение"],
+  name: ["name", "title"],
+  category: ["categories", "category"],
+  img: ["image url", "image_url", "imageurl", "image", "img"],
   admin: ["admin url", "admin_url", "adminurl"],
-  w: ["x (width)", "width", "x", "ширина"],
-  d: ["y (depth)", "depth", "y", "глубина"],
-  h: ["z (height)", "height", "z", "высота"],
+  w: ["x (width)", "width", "x"],
+  d: ["y (depth)", "depth", "y"],
+  h: ["z (height)", "height", "z"],
 };
 
 function matchColumn(headers, field) {
