@@ -262,7 +262,7 @@ function CardGrid({ items, selectedIds, onCardClick, onDragStart, onDragEnd, onM
 
   // Reserve a row for the W/D/H table when any item carries dimensions.
   const hasDims = useMemo(() => items.some((it) => it.w || it.d || it.h), [items]);
-  const DIM_H = hasDims ? 30 : 0;
+  const DIM_H = hasDims ? 42 : 0;
 
   // Card height = image + name block (longest name) + dimensions + category block.
   const ROW_H = IMG_H + PAD_V + nameBlockH + DIM_H + catBlockH + GAP;
@@ -461,11 +461,11 @@ function CardGrid({ items, selectedIds, onCardClick, onDragStart, onDragEnd, onM
               <div style={{ padding: "8px 10px" }}>
                 <div style={{ fontSize: NAME_FS, lineHeight: `${NAME_LH}px`, fontWeight: 500, height: nameBlockH, overflow: "hidden", wordBreak: "break-word" }}>{item.name || `#${item.id}`}</div>
                 {DIM_H > 0 && (
-                  <div style={{ marginTop: 5, height: DIM_H - 5, display: "flex", gap: 10, alignItems: "flex-end" }}>
-                    {[["W", item.w], ["D", item.d], ["H", item.h]].map(([lbl, val]) => (
-                      <div key={lbl} style={{ display: "flex", flexDirection: "column", lineHeight: 1.15 }}>
-                        <span style={{ fontSize: 9, color: "#94a3b8", letterSpacing: ".06em" }}>{lbl}</span>
-                        <span style={{ fontSize: 12, color: val ? "#334155" : "#cbd5e1", fontVariantNumeric: "tabular-nums" }}>
+                  <div style={{ marginTop: 6, height: DIM_H - 6, display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 6, boxSizing: "border-box" }}>
+                    {[["Width", item.w], ["Depth", item.d], ["Height", item.h]].map(([lbl, val]) => (
+                      <div key={lbl} style={{ display: "flex", flexDirection: "column", justifyContent: "center", minWidth: 0, padding: "0 7px", border: "1px solid #e2e8f0", borderRadius: 6, background: "#f8fafc", boxSizing: "border-box", lineHeight: 1.2 }}>
+                        <span style={{ fontSize: 9, color: "#94a3b8", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{lbl}</span>
+                        <span style={{ fontSize: 12, fontWeight: 500, color: val ? "#334155" : "#cbd5e1", fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                           {val ? Number(val).toFixed(Number(val) % 1 ? 1 : 0) : "—"}
                         </span>
                       </div>
