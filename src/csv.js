@@ -13,6 +13,9 @@ const ALIASES = {
   category: ["categories", "category", "категория", "категорії", "категорія"],
   img: ["image url", "image_url", "imageurl", "image", "img", "картинка", "изображение"],
   admin: ["admin url", "admin_url", "adminurl"],
+  w: ["x (width)", "width", "x", "ширина"],
+  d: ["y (depth)", "depth", "y", "глубина"],
+  h: ["z (height)", "height", "z", "высота"],
 };
 
 function matchColumn(headers, field) {
@@ -43,6 +46,9 @@ export function parseCsv(text) {
   const catCol = matchColumn(headers, "category");
   let imgCol = matchColumn(headers, "img");
   const adminCol = matchColumn(headers, "admin");
+  const wCol = matchColumn(headers, "w");
+  const dCol = matchColumn(headers, "d");
+  const hCol = matchColumn(headers, "h");
 
   // Prefer a populated "image url" over an empty "image" column.
   // If both exist, matchColumn already prioritises "image url" via alias order.
@@ -72,10 +78,13 @@ export function parseCsv(text) {
       rawCategory: rawCat.trim(),      // full comma-separated list of paths
       img: imgCol !== -1 ? (r[imgCol] || "").trim() : "",
       admin: adminCol !== -1 ? (r[adminCol] || "").trim() : "",
+      w: wCol !== -1 ? (r[wCol] || "").trim() : "",
+      d: dCol !== -1 ? (r[dCol] || "").trim() : "",
+      h: hCol !== -1 ? (r[hCol] || "").trim() : "",
     });
   }
 
-  return { items, headers, warnings, mapping: { idCol, nameCol, catCol, imgCol, adminCol } };
+  return { items, headers, warnings, mapping: { idCol, nameCol, catCol, imgCol, adminCol, wCol, dCol, hCol } };
 }
 
 // Build CSV for export: id, name, category, admin url, image url.
@@ -86,6 +95,11 @@ export function buildCsv(items) {
     categories: it.category,
     "admin url": it.admin || "",
     "image url": it.img || "",
+    "x (width)": it.w || "",
+    "y (depth)": it.d || "",
+    "z (height)": it.h || "",
   }));
-  return Papa.unparse(data, { columns: ["id", "name", "categories", "admin url", "image url"] });
+  return Papa.unparse(data, {
+    columns: ["id", "name", "categories", "admin url", "image url", "x (width)", "y (depth)", "z (height)"],
+  });
 }

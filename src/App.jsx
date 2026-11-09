@@ -260,8 +260,12 @@ function CardGrid({ items, selectedIds, onCardClick, onDragStart, onDragEnd, onM
   }, [items]);
   const catBlockH = maxPaths * CAT_LH + 3; // + small top spacing
 
-  // Card height = image + name block (longest name) + category block (most paths).
-  const ROW_H = IMG_H + PAD_V + nameBlockH + catBlockH + GAP;
+  // Reserve a row for the W/D/H table when any item carries dimensions.
+  const hasDims = useMemo(() => items.some((it) => it.w || it.d || it.h), [items]);
+  const DIM_H = hasDims ? 30 : 0;
+
+  // Card height = image + name block (longest name) + dimensions + category block.
+  const ROW_H = IMG_H + PAD_V + nameBlockH + DIM_H + catBlockH + GAP;
 
   // Measure how many lines the longest name needs at the current card width.
   useEffect(() => {
@@ -456,6 +460,18 @@ function CardGrid({ items, selectedIds, onCardClick, onDragStart, onDragEnd, onM
               </div>
               <div style={{ padding: "8px 10px" }}>
                 <div style={{ fontSize: NAME_FS, lineHeight: `${NAME_LH}px`, fontWeight: 500, height: nameBlockH, overflow: "hidden", wordBreak: "break-word" }}>{item.name || `#${item.id}`}</div>
+                {DIM_H > 0 && (
+                  <div style={{ marginTop: 5, height: DIM_H - 5, display: "flex", gap: 10, alignItems: "flex-end" }}>
+                    {[["W", item.w], ["D", item.d], ["H", item.h]].map(([lbl, val]) => (
+                      <div key={lbl} style={{ display: "flex", flexDirection: "column", lineHeight: 1.15 }}>
+                        <span style={{ fontSize: 9, color: "#94a3b8", letterSpacing: ".06em" }}>{lbl}</span>
+                        <span style={{ fontSize: 12, color: val ? "#334155" : "#cbd5e1", fontVariantNumeric: "tabular-nums" }}>
+                          {val ? Number(val).toFixed(Number(val) % 1 ? 1 : 0) : "—"}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
                 <div style={{ marginTop: 3, height: catBlockH, overflow: "hidden" }}>
                   {item.paths && item.paths.length ? (
                     item.paths.map((p, i) => (
@@ -788,13 +804,13 @@ export default function App() {
     let seq = 1;
     const nextItems = parsed.map((it) => {
       const raw = (it.rawCategory || it.category || "").trim();
-      if (!raw) return { id: it.id, name: it.name, img: it.img, admin: it.admin, subId: null, category: "" };
+      if (!raw) return { id: it.id, name: it.name, img: it.img, admin: it.admin, w: it.w, d: it.d, h: it.h, subId: null, category: "" };
       const paths = raw.split(",").map((p) => p.trim()).filter(Boolean);
       // top-level only (no dot in the first path) -> keep as top-level item
       const first = paths[0];
       const firstDot = first.indexOf(".");
       if (firstDot === -1) {
-        return { id: it.id, name: it.name, img: it.img, admin: it.admin, subId: null, category: first };
+        return { id: it.id, name: it.name, img: it.img, admin: it.admin, w: it.w, d: it.d, h: it.h, subId: null, category: first };
       }
       // subcategory: leaf name from the first path (anomaly-safe per your rule)
       const leaf = first.slice(firstDot + 1);
@@ -815,7 +831,7 @@ export default function App() {
         // merge any new owners seen on later items with the same leaf
         for (const o of owners) if (!registry[subId].owners.includes(o)) registry[subId].owners.push(o);
       }
-      return { id: it.id, name: it.name, img: it.img, admin: it.admin, subId, category: "" };
+      return { id: it.id, name: it.name, img: it.img, admin: it.admin, w: it.w, d: it.d, h: it.h, subId, category: "" };
     });
     subIdSeq.current = seq;
     // collect all top-level categories seen (owners + top-level items)
@@ -1340,7 +1356,7 @@ export default function App() {
     const misses = new Map();
     const knownCats = new Set(catListRef.current);
     const nextItems = parsed.map((it) => {
-      const base = { id: it.id, name: it.name, img: it.img, admin: it.admin, subId: null, category: "" };
+      const base = { id: it.id, name: it.name, img: it.img, admin: it.admin, w: it.w, d: it.d, h: it.h, subId: null, category: "" };
       const raw = (it.rawCategory || it.category || "").trim();
       if (!raw) return base;
       const first = raw.split(",")[0].trim();
