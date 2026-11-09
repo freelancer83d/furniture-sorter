@@ -87,12 +87,14 @@ export function parseCsv(text) {
   return { items, headers, warnings, mapping: { idCol, nameCol, catCol, imgCol, adminCol, wCol, dCol, hCol } };
 }
 
-// Build CSV for export: id, name, category, admin url, image url.
+// Build CSV for export: id, name, categories, category ids, admin url, image url, dimensions.
+// `categoryIds` holds the admin taxonomy ids for the categories (empty when unknown).
 export function buildCsv(items) {
   const data = items.map((it) => ({
     id: it.id,
     name: it.name,
     categories: it.category,
+    "category ids": it.categoryIds || "",
     "admin url": it.admin || "",
     "image url": it.img || "",
     "x (width)": it.w || "",
@@ -100,6 +102,6 @@ export function buildCsv(items) {
     "z (height)": it.h || "",
   }));
   return Papa.unparse(data, {
-    columns: ["id", "name", "categories", "admin url", "image url", "x (width)", "y (depth)", "z (height)"],
+    columns: ["id", "name", "categories", "category ids", "admin url", "image url", "x (width)", "y (depth)", "z (height)"],
   });
 }

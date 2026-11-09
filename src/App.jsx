@@ -760,6 +760,10 @@ export default function App() {
   const structRef = useRef(null);
   // Names from the last import that had no matching subcategory in the structure.
   const [unmatched, setUnmatched] = useState(null);
+  // Admin taxonomy ids: { slugToId: { "living.sofas": 79, ... }, builtAt, source }.
+  // Loaded from an imported file (kept in this browser) or the one shipped with the app.
+  const [categoryIds, setCategoryIds] = useState(null);
+  const idsRef = useRef(null);
   const subIdSeq = useRef(1);
 
   const newSubId = () => `s${subIdSeq.current++}`;
@@ -917,6 +921,19 @@ export default function App() {
       setLoaded(true);
     })();
   }, [migrate, parseStructure]);
+
+  // ----- admin category ids: imported copy wins, otherwise the bundled file -----
+  useEffect(() => { (async () => {
+    try {
+      const saved = await loadMeta("categoryIds");
+      if (saved && saved.slugToId) { setCategoryIds(saved); return; }
+      const res = await fetch(`${import.meta.env.BASE_URL}category-ids.json`, { cache: "no-cache" });
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data.slugToId) setCategoryIds(data);
+      }
+    } catch (e) { console.warn("No admin category ids loaded:", e); }
+  })(); }, []);
 
   const persistSubcats = (next) => { saveMeta("subcats", next).catch(console.error); };
   const persistOrder = (next) => { saveMeta("catOrder", next).catch(console.error); };
@@ -1762,16 +1779,71 @@ export default function App() {
 
   // ----- export (all display paths, comma-separated) -----
   const exportCsv = () => {
-    const withPaths = items.map((it) => ({
-      ...it,
-      category: pathsForItem(it).join(", "),
-    }));
+    const slugToId = categoryIds?.slugToId || null;
+    const missing = new Set();
+    let itemsWithoutIds = 0;
+    const withPaths = items.map((it) => {
+      const paths = pathsForItem(it);
+      let categoryIdsCell = "";
+      if (slugToId && paths.length) {
+        const ids = paths.map((p) => slugToId[p]);
+        const unknown = paths.filter((p, i) => ids[i] == null);
+        if (unknown.length) {
+          unknown.forEach((p) => missing.add(p));
+          itemsWithoutIds++;
+        } else {
+          categoryIdsCell = ids.join(", ");
+        }
+      }
+      return { ...it, category: paths.join(", "), categoryIds: categoryIdsCell };
+    });
     const csv = buildCsv(withPaths);
     const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url; a.download = "furniture-sorted.csv"; a.click();
     URL.revokeObjectURL(url);
+    if (!slugToId) {
+      showToast("Exported without category ids: no admin category ids loaded (Structure menu).");
+    } else if (missing.size) {
+      const list = [...missing].sort();
+      showToast(`Exported. ${itemsWithoutIds} item(s) have categories missing in the admin ids (${list.slice(0, 3).join(", ")}${list.length > 3 ? ", ..." : ""}); their "category ids" cell is empty.`);
+    }
+  };
+
+  // ----- import admin category ids (category-ids.json from the userscript or the repo) -----
+  const onCategoryIdsFile = async (e) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    try {
+      const data = JSON.parse(await file.text());
+      const map = data && data.slugToId;
+      const valid = map && typeof map === "object" && Object.keys(map).length
+        && Object.entries(map).every(([slug, id]) => slug.includes(".") && Number.isInteger(Number(id)));
+      if (!valid) throw new Error("bad format");
+      const next = { slugToId: map, builtAt: data.builtAt || "", source: file.name };
+      await saveMeta("categoryIds", next);
+      setCategoryIds(next);
+      showToast(`Admin category ids loaded: ${Object.keys(map).length} categories.`);
+    } catch (err) {
+      console.error(err);
+      showToast("Could not read that category ids file.");
+    }
+  };
+
+  const reloadBundledCategoryIds = async () => {
+    try {
+      const res = await fetch(`${import.meta.env.BASE_URL}category-ids.json`, { cache: "no-cache" });
+      if (!res.ok) throw new Error("not found");
+      const data = await res.json();
+      if (!data || !data.slugToId) throw new Error("bad format");
+      await saveMeta("categoryIds", null);
+      setCategoryIds(data);
+      showToast(`Bundled category ids loaded: ${Object.keys(data.slugToId).length} categories.`);
+    } catch {
+      showToast("No bundled category ids found in the app folder.");
+    }
   };
 
   const resetAll = async () => {
@@ -2005,6 +2077,21 @@ export default function App() {
                     Reload catalogue shipped with the app
                   </button>
                 </div>
+                <div style={{ borderTop: "1px solid #e2e8f0", marginTop: 4, paddingTop: 4 }}>
+                  <div style={{ fontSize: 11, color: "#64748b", padding: "4px 8px 6px" }}>
+                    {categoryIds
+                      ? `Admin category ids: ${Object.keys(categoryIds.slugToId).length} categories${categoryIds.builtAt ? ` (${String(categoryIds.builtAt).slice(0, 10)})` : ""}. Export CSV adds a "category ids" column.`
+                      : "No admin category ids loaded. Export CSV will leave \"category ids\" empty."}
+                  </div>
+                  <button onClick={() => { setStructOpen(false); idsRef.current?.click(); }}
+                    style={{ display: "block", width: "100%", textAlign: "left", padding: "7px 8px", border: "none", background: "transparent", cursor: "pointer", fontSize: 12.5, borderRadius: 6 }}>
+                    Import admin category ids…
+                  </button>
+                  <button onClick={() => { setStructOpen(false); reloadBundledCategoryIds(); }}
+                    style={{ display: "block", width: "100%", textAlign: "left", padding: "7px 8px", border: "none", background: "transparent", cursor: "pointer", fontSize: 12.5, color: "#2563eb", borderRadius: 6 }}>
+                    Reload category ids shipped with the app
+                  </button>
+                </div>
               </div>
             )}
           </div>
@@ -2015,6 +2102,7 @@ export default function App() {
           <button onClick={resetAll} style={{ ...toolBtn, color: "#dc2626" }}><Trash2 size={14} /></button>
           <input ref={fileRef} type="file" accept=".csv,text/csv" onChange={onFile} style={{ display: "none" }} />
           <input ref={structRef} type="file" accept=".json,application/json" onChange={onStructureFile} style={{ display: "none" }} />
+          <input ref={idsRef} type="file" accept=".json,application/json" onChange={onCategoryIdsFile} style={{ display: "none" }} />
         </div>
 
         {unmatched && (
